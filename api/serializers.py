@@ -110,3 +110,16 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Feedback
         fields = '__all__'
+
+
+from .models import Course, FeedbackQuestion
+
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = '__all__'
+
+class FeedbackQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FeedbackQuestion
+        fields = '__all__'

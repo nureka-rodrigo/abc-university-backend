@@ -95,3 +95,22 @@ class Feedback(models.Model):
     Clarity_of_Explanations = models.CharField(max_length=100, null=False)
     Usefulness_of_Assignments = models.CharField(max_length=100, null=False)
     Overall_Satisfaction = models.CharField(max_length=100, null=False)
+
+
+
+
+
+class Course(models.Model):
+    course_code = models.CharField(max_length=10)
+    course_title = models.CharField(max_length=100)
+    credits = models.IntegerField()
+    lecturer = models.CharField(max_length=100)
+
+class FeedbackQuestion(models.Model):
+    question_text = models.CharField(max_length=255)
+
+class Feedback(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    feedback_date = models.DateTimeField(auto_now_add=True)
+    answers = models.JSONField()

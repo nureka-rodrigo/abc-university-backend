@@ -10,8 +10,36 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+
+from django.shortcuts import get_object_or_404, render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Course, Feedback, FeedbackQuestion
+from .forms import FeedbackForm
+
+
+
+
 from . import models
 from .serializers import UserSerializer, StudentSerializer, ResultSerializer, CourseSerializer, FeedbackSerializer
+
+
+
+
+from rest_framework import generics
+from .models import Course, FeedbackQuestion
+from .serializers import CourseSerializer, FeedbackQuestionSerializer
+
+class CourseListView(generics.ListAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+
+class FeedbackQuestionListView(generics.ListAPIView):
+    queryset = FeedbackQuestion.objects.all()
+    serializer_class = FeedbackQuestionSerializer
+
+
+
 
 
 @api_view(['GET'])
@@ -521,3 +549,25 @@ def submit_feedback(request):
         return Response({
             "error": f"An error occurred: {str(e)}"
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+@csrf_exempt
+def submit_feedback(request, course_id):
+    course = get_object_or_404(Course, pk=course_id)
+    user = request.user
+
+    if request.method == 'POST':
+        feedback_questions = FeedbackQuestion.objects.all()
+        form = FeedbackForm(request.POST, feedback_questions=feedback_questions)
+
+        if form.is_valid():
+            answers = {question.question_text: form.cleaned_data[question.question_text] for question in feedback_questions}
+            feedback = Feedback.objects.create(user=user, course=course, answers=answers)
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors})
+
+    return render(request, 'feedback_form.html', {'course': course})
